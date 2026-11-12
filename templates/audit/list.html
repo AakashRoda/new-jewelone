@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}History · Store App{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>History</h1>
+  <p class="muted">Every recorded action and every refused attempt. Entries cannot be changed or deleted.</p>
+</div>
+<form method="get" class="filters">
+  <label>Action <select name="action"><option value="">All</option>{% for name in actions %}<option value="{{ name }}"{% if name == action %} selected{% endif %}>{{ name }}</option>{% endfor %}</select></label>
+  <label>Outcome <select name="outcome"><option value="">All</option><option value="succeeded"{% if outcome == 'succeeded' %} selected{% endif %}>Succeeded</option><option value="denied"{% if outcome == 'denied' %} selected{% endif %}>Refused</option></select></label>
+  <label>Record <input type="search" name="q" value="{{ q }}" placeholder="e.g. INW-000003"></label>
+  <button type="submit" class="button">Filter</button>
+</form>
+<div class="table-wrap">
+<table class="data">
+  <thead><tr><th>When</th><th>Who</th><th>What</th><th>Record</th><th>Reason</th><th>Details</th></tr></thead>
+  <tbody>
+  {% for event in page %}
+    <tr{% if event.outcome == 'denied' %} class="denied"{% endif %}>
+      <td class="nowrap">{{ event.occurred_at|date:"d M Y, H:i:s" }}</td>
+      <td>{{ event.actor.label|default:"Server command" }}</td>
+      <td>{{ event.label }}{% if event.outcome == 'denied' %} <span class="pill bad">refused</span>{% endif %}{% if event.capability %}<div class="muted small">{{ event.capability }}</div>{% endif %}</td>
+      <td>{{ event.target_label|default:"—" }}</td>
+      <td>{{ event.reason|default:"—" }}</td>
+      <td>{% with changes=event.changes %}{% if changes %}<ul class="changes">{% for change in changes %}<li><span class="muted">{{ change.0 }}:</span> {{ change.1 }} → <strong>{{ change.2 }}</strong></li>{% endfor %}</ul>{% else %}<span class="muted">—</span>{% endif %}{% endwith %}</td>
+    </tr>
+  {% empty %}<tr><td colspan="6" class="muted">Nothing matches.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+<p class="pager">
+  {% if page.has_previous %}<a href="?page={{ page.previous_page_number }}&action={{ action|urlencode }}&outcome={{ outcome|urlencode }}&q={{ q|urlencode }}">Newer</a>{% endif %}
+  <span class="muted">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+  {% if page.has_next %}<a href="?page={{ page.next_page_number }}&action={{ action|urlencode }}&outcome={{ outcome|urlencode }}&q={{ q|urlencode }}">Older</a>{% endif %}
+</p>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load storefmt %}
+{% block title %}Invoice {{ invoice.invoice_number }} · Store App{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{% url 'invoice-list' %}">Supplier invoices</a> / {{ invoice.invoice_number }}</p>
+<div class="page-head">
+  <h1>Invoice {{ invoice.invoice_number }} <span class="pill book">Book record</span></h1>
+  <p class="muted">{{ invoice.supplier }} · dated {{ invoice.invoice_date|date:"d M Y" }}</p>
+</div>
+<div class="notice info">This records what the supplier's document states. It has no effect on physical stock, whether or not it is linked to a receipt. It is not a tax-compliant purchase entry.</div>
+
+<section class="card">
+  <h2>Stated on the invoice</h2>
+  <dl class="facts">
+    <div><dt>Taxable value</dt><dd>{{ invoice.stated_taxable_value|rupees }}</dd></div>
+    <div><dt>Tax</dt><dd>{{ invoice.stated_tax_value|rupees }}</dd></div>
+    <div><dt>Invoice total</dt><dd>{{ invoice.stated_total_value|rupees }}</dd></div>
+    <div><dt>Entered by</dt><dd>{{ invoice.created_by.label }}, {{ invoice.created_at|date:"d M Y, H:i" }}</dd></div>
+    {% if invoice.notes %}<div class="wide"><dt>Notes</dt><dd>{{ invoice.notes }}</dd></div>{% endif %}
+  </dl>
+</section>
+
+<section class="card">
+  <h2>Lines and their receipts</h2>
+  <div class="table-wrap">
+  <table class="data">
+    <thead><tr><th>#</th><th>Description</th><th class="num">Pieces stated</th><th class="num">Weight stated</th><th class="num">Value stated</th><th>Linked receipt</th></tr></thead>
+    <tbody>
+    {% for line in lines %}
+      <tr>
+        <td>{{ line.line_no }}</td>
+        <td>{{ line.description }}<div class="muted small">{% if line.item %}{{ line.item }}{% endif %}{% if line.purity %} · {{ line.purity }}{% endif %}{% if line.hsn_code %} · HSN {{ line.hsn_code }}{% endif %}</div></td>
+        <td class="num">{{ line.stated_pieces|dash }}</td>
+        <td class="num">{{ line.stated_gross_weight|weight }}{% if line.unit and line.stated_gross_weight is not None %} {{ line.unit.code }}{% endif %}</td>
+        <td class="num">{{ line.stated_value|rupees }}</td>
+        <td>
+          {% for link in line.links %}
+            <div><a href="{% url 'inward-detail' link.inward_line.inward_id %}">{{ link.inward_line.inward.number }}</a> line {{ link.inward_line.line_no }}:
+              received {{ link.inward_line.actual_gross_weight|weight }} {{ link.inward_line.unit.code }}
+              {% if 'purchase_invoice.match' in caps %}<a class="small" href="{% url 'invoice-match-remove' link.pk %}">remove link</a>{% endif %}</div>
+          {% empty %}<span class="pill draft">Not linked yet</span>{% endfor %}
+          {% if 'purchase_invoice.match' in caps %}<div><a class="small" href="{% url 'invoice-match' line.pk %}">Link to a receipt</a></div>{% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="card">
+  <h2>History</h2>
+  {% include "partials/history.html" %}
+</section>
+{% endblock %}

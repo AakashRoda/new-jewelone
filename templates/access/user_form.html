@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Users and roles · Store App{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{% url 'access-index' %}">Users and roles</a> / User</p>
+<h1>{% if edited_user %}Change user {{ edited_user.username }}{% else %}Add user{% endif %}</h1>
+{% include "partials/errors.html" with form_errors=form.non_field_errors %}
+<form method="post" class="narrow" novalidate data-once>{% csrf_token %}
+  {% for field in form %}{% include "partials/field.html" with wide=True %}{% endfor %}
+  <div class="actions">
+    <button type="submit" class="primary">Save</button>
+    <a class="button" href="{% url 'access-index' %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load storefmt %}
+{% block title %}Masters and settings · Store App{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Masters and settings</h1></div>
+<section class="card">
+  <h2>Masters</h2>
+  <div class="tiles">
+    {% for group in groups %}
+    <a class="tile" href="{% url 'master-list' group.slug %}"><strong>{{ group.title }}</strong><span class="muted">{{ group.count }} record{{ group.count|pluralize }}</span></a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="card">
+  <h2>Demo settings that need an owner decision</h2>
+  <p class="muted small">These numbers are named demo values so that flows can be tried out. They are not agreed production policy and nothing is posted using them yet.</p>
+  {% if settings_rows %}
+  <div class="table-wrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th class="num">Value</th><th>Status</th><th>About</th></tr></thead>
+    <tbody>
+    {% for row in settings_rows %}
+      <tr><td>{{ row.label }}<div class="muted small"><code>{{ row.key }}</code></div></td><td class="num">{{ row.value|weight }} {{ row.unit }}</td><td><span class="pill {% if row.status == 'demo' %}draft{% else %}ok{% endif %}">{{ row.get_status_display }}</span>{% if row.decision_ref %} <span class="muted small">{{ row.decision_ref }}</span>{% endif %}</td><td class="small">{{ row.description }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}<p class="muted">No settings have been loaded.</p>{% endif %}
+</section>
+
+<section class="card">
+  <h2>Held back until the owner decides</h2>
+  <div class="table-wrap">
+  <table class="data">
+    <thead><tr><th>Decision</th><th>About</th><th>What the app does meanwhile</th></tr></thead>
+    <tbody>{% for ref, title, effect in gated %}<tr><td><strong>{{ ref }}</strong></td><td>{{ title }}</td><td>{{ effect }}</td></tr>{% endfor %}</tbody>
+  </table>
+  </div>
+</section>
+{% endblock %}

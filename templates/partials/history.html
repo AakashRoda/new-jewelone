@@ -1,0 +1,22 @@
+{% if history %}
+<table class="data">
+  <thead><tr><th>When</th><th>Who</th><th>What</th><th>Reason</th><th>Details</th></tr></thead>
+  <tbody>
+  {% for event in history %}
+    <tr{% if event.outcome == 'denied' %} class="denied"{% endif %}>
+      <td class="nowrap">{{ event.occurred_at|date:"d M Y, H:i" }}</td>
+      <td>{{ event.actor.label|default:"Server command" }}</td>
+      <td>{{ event.label }}{% if event.outcome == 'denied' %} <span class="pill bad">refused</span>{% endif %}{% if event.capability %}<div class="muted small">permission checked: {{ event.capability }}</div>{% endif %}</td>
+      <td>{{ event.reason|default:"—" }}</td>
+      <td>
+        {% with changes=event.changes %}
+        {% if changes %}
+          <ul class="changes">{% for change in changes %}<li><span class="muted">{{ change.0 }}:</span> {{ change.1 }} → <strong>{{ change.2 }}</strong></li>{% endfor %}</ul>
+        {% else %}<span class="muted">—</span>{% endif %}
+        {% endwith %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<p class="muted">No history yet.</p>{% endif %}

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load storefmt %}
+{% block title %}Stock · Store App{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Stock</h1>
+  <p class="muted">What is physically held in the store, from goods received through this application.</p>
+</div>
+
+<section class="card">
+  <h2>Tagged pieces</h2>
+  <p class="muted">No pieces are tagged yet. Lots and tagging are the next build stage. Until then, received pieces appear below as untagged.</p>
+</section>
+
+<section class="card">
+  <h2>Untagged pieces, received and waiting for lots</h2>
+  {% if awaiting %}
+  <div class="table-wrap">
+  <table class="data">
+    <thead><tr><th>Item</th><th>From</th><th>Inward</th><th>Held at</th><th class="num">Pieces</th><th class="num">Gross</th><th class="num">Net</th></tr></thead>
+    <tbody>
+    {% for line in awaiting %}
+      <tr>
+        <td>{{ line.classification }}</td>
+        <td>{{ line.inward.source_party }}<div class="muted small">{{ line.inward.get_source_type_display }}</div></td>
+        <td><a href="{% url 'inward-detail' line.inward_id %}">{{ line.inward.number }}</a></td>
+        <td>{{ line.inward.location }}</td>
+        <td class="num">{{ line.actual_pieces }}</td>
+        <td class="num">{{ line.actual_gross_weight|weight }} {{ line.unit.code }}</td>
+        <td class="num">{{ line.actual_net_weight|weight }} {{ line.unit.code }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+    <tfoot><tr><th colspan="4">Total physically held, untagged</th><th class="num">{{ awaiting_totals.pieces }}</th><th class="num">{{ awaiting_totals.gross|weight }}</th><th class="num">{{ awaiting_totals.net|weight }}</th></tr></tfoot>
+  </table>
+  </div>
+  {% else %}<p class="muted">Nothing is waiting for lots.</p>{% endif %}
+</section>
+
+<section class="card">
+  <h2>Weight-only stock</h2>
+  <p class="muted small">Tracked by weight with no tags and no piece count. Each figure is the sum of recorded receipts and issues; it cannot be typed over.</p>
+  {% if weight_only %}
+  <div class="table-wrap">
+  <table class="data">
+    <thead><tr><th>Item</th><th>Purity</th><th>Held at</th><th class="num">Weight physically held</th></tr></thead>
+    <tbody>
+    {% for row in weight_only %}
+      <tr><td>{{ row.item }}{% if row.variety %} · {{ row.variety }}{% endif %}</td><td>{{ row.purity }}</td><td>{{ row.location }}</td><td class="num"><strong>{{ row.weight|weight }} {{ row.unit }}</strong></td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}<p class="muted">No weight-only stock has been received.</p>{% endif %}
+</section>
+
+<p class="muted small">All stock shown is physically present. Availability for sale (layaways and online orders) will be shown separately when the sales interfaces are built.
+{% if drafts %} There {% if drafts == 1 %}is 1 draft inward{% else %}are {{ drafts }} draft inwards{% endif %} not yet received into stock: <a href="{% url 'inward-list' %}?status=draft">see drafts</a>.{% endif %}</p>
+{% endblock %}

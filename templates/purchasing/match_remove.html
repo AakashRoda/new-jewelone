@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Remove link · Store App{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{% url 'invoice-list' %}">Supplier invoices</a> / <a href="{% url 'invoice-detail' invoice.pk %}">{{ invoice.invoice_number }}</a> / Remove link</p>
+<h1>Remove the link to {{ match.inward_line.inward.number }}</h1>
+<p>Invoice {{ invoice.invoice_number }} line {{ match.invoice_line.line_no }} is linked to {{ match.inward_line.inward.number }} line {{ match.inward_line.line_no }}. Removing the link does not change physical stock; the receipt stays exactly as it is.</p>
+{% include "partials/errors.html" %}
+<form method="post" class="narrow" data-once>{% csrf_token %}
+  <input type="hidden" name="retry_key" value="{{ retry_key }}">
+  {% include "partials/field.html" with field=form.reason wide=True %}
+  <div class="actions">
+    <button type="submit" class="primary">Remove link</button>
+    <a class="button" href="{% url 'invoice-detail' invoice.pk %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

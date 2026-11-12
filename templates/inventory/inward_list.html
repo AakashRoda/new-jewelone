@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load storefmt %}
+{% block title %}Inwards · Store App{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Inwards</h1>
+  <p class="muted">Goods actually received. A supplier invoice is a separate book record and is never needed to receive goods.</p>
+  {% if 'inward.create' in caps %}
+  <div class="actions">
+    <a class="button primary" href="{% url 'inward-new' 'taggable' %}">New inward: tagged pieces</a>
+    <a class="button" href="{% url 'inward-new' 'weight_only' %}">New inward: weight-only stock</a>
+  </div>
+  {% endif %}
+</div>
+<div class="filters">
+  <a href="{% url 'inward-list' %}" class="chip{% if not status %} on{% endif %}">All</a>
+  <a href="?status=draft" class="chip{% if status == 'draft' %} on{% endif %}">Drafts</a>
+  <a href="?status=confirmed" class="chip{% if status == 'confirmed' %} on{% endif %}">Received</a>
+</div>
+{% if inwards %}
+<div class="table-wrap">
+<table class="data">
+  <thead><tr><th>Inward</th><th>From</th><th>Their reference</th><th>Stock type</th><th class="num">Lines</th><th class="num">Actual weight</th><th>Status</th></tr></thead>
+  <tbody>
+  {% for inward in inwards %}
+    <tr>
+      <td><a href="{% url 'inward-detail' inward.pk %}">{{ inward.number }}</a><div class="muted small">{{ inward.created_at|date:"d M Y" }}</div></td>
+      <td>{{ inward.source_party }}<div class="muted small">{{ inward.get_source_type_display }}</div></td>
+      <td>{{ inward.source_reference|default:"—" }}</td>
+      <td>{% if inward.is_weight_only %}Weight-only{% else %}Tagged pieces{% endif %}</td>
+      <td class="num">{{ inward.line_count }}</td>
+      <td class="num">{{ inward.total_weight|weight }}</td>
+      <td>
+        {% if inward.is_locked %}<span class="pill locked">Received · locked</span>
+        {% elif inward.is_confirmed %}<span class="pill ok">Received</span>
+        {% else %}<span class="pill draft">Draft</span>{% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% else %}<p class="muted">No inwards here yet.</p>{% endif %}
+{% endblock %}

@@ -1,0 +1,37 @@
+# Local demo: `docker compose up --build`, then open http://localhost:8000
+# This is a demo setup with synthetic data. It is not a production deployment (O12).
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: storeapp
+      POSTGRES_USER: storeapp
+      POSTGRES_PASSWORD: storeapp
+    volumes:
+      - storeapp-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U storeapp -d storeapp"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  web:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      STOREAPP_DEMO_MODE: "1"
+      STOREAPP_DB_HOST: db
+      STOREAPP_DB_NAME: storeapp
+      STOREAPP_DB_USER: storeapp
+      STOREAPP_DB_PASSWORD: storeapp
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py seed_demo &&
+             gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3"
+    ports:
+      - "8000:8000"
+
+volumes:
+  storeapp-db:

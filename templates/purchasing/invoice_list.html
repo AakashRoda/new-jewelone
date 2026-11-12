@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load storefmt %}
+{% block title %}Supplier invoices · Store App{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Supplier invoices</h1>
+  <p class="muted">Book records of what suppliers have invoiced. Entering or linking an invoice never changes physical stock.</p>
+  {% if 'purchase_invoice.record' in caps %}<div class="actions"><a class="button primary" href="{% url 'invoice-new' %}">Enter a supplier invoice</a></div>{% endif %}
+</div>
+{% if invoices %}
+<div class="table-wrap">
+<table class="data">
+  <thead><tr><th>Invoice</th><th>Supplier</th><th>Date</th><th class="num">Lines</th><th class="num">Total stated</th></tr></thead>
+  <tbody>
+  {% for invoice in invoices %}
+    <tr><td><a href="{% url 'invoice-detail' invoice.pk %}">{{ invoice.invoice_number }}</a></td><td>{{ invoice.supplier }}</td><td>{{ invoice.invoice_date|date:"d M Y" }}</td><td class="num">{{ invoice.line_count }}</td><td class="num">{{ invoice.stated_total_value|rupees }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% else %}<p class="muted">No supplier invoices have been entered.</p>{% endif %}
+{% endblock %}

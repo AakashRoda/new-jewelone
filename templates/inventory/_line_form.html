@@ -1,0 +1,30 @@
+<fieldset class="line-card" data-line>
+  <legend>Line</legend>
+  {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+  {% if form.non_field_errors %}<div class="error-text">{{ form.non_field_errors }}</div>{% endif %}
+  <div class="grid three">
+    {% include "partials/field.html" with field=form.item %}
+    {% include "partials/field.html" with field=form.purity %}
+    {% include "partials/field.html" with field=form.variety %}
+  </div>
+  <div class="grid qty">
+    <div class="qty-group">
+      <div class="qty-title">Declared by the source <span class="muted small">(leave empty if not stated)</span></div>
+      <div class="grid qty3">
+        {% if form.declared_pieces %}{% include "partials/field.html" with field=form.declared_pieces %}{% endif %}
+        {% include "partials/field.html" with field=form.declared_gross_weight %}
+        {% if form.declared_net_weight %}{% include "partials/field.html" with field=form.declared_net_weight %}{% endif %}
+      </div>
+    </div>
+    <div class="qty-group actual">
+      <div class="qty-title">Actually received and weighed</div>
+      <div class="grid qty3">
+        {% if form.actual_pieces %}{% include "partials/field.html" with field=form.actual_pieces %}{% endif %}
+        {% include "partials/field.html" with field=form.actual_gross_weight %}
+        {% if form.actual_net_weight %}{% include "partials/field.html" with field=form.actual_net_weight %}{% endif %}
+      </div>
+    </div>
+  </div>
+  {% include "partials/field.html" with field=form.condition_notes wide=True %}
+  <label class="remove-line">{{ form.DELETE }} Remove this line</label>
+</fieldset>
