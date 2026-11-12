@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Sign in · Store App{% endblock %}
+{% block content %}
+<div class="narrow">
+  <h1>Sign in</h1>
+  {% if form.errors %}<div class="notice error" role="alert">That username and password did not match. Please try again.</div>{% endif %}
+  <form method="post" class="stack">{% csrf_token %}
+    <label>Username {{ form.username }}</label>
+    <label>Password {{ form.password }}</label>
+    <input type="hidden" name="next" value="{{ next }}">
+    <button type="submit" class="primary">Sign in</button>
+  </form>
+  {% if DEMO_MODE %}
+  <p class="muted small">Demo logins: demo_owner, demo_receiver, demo_verifier, demo_accounts, demo_viewer. The demo password is in the README.</p>
+  {% endif %}
+</div>
+{% endblock %}

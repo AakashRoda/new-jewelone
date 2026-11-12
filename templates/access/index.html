@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Users and roles · Store App{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Users and roles</h1>
+  <p class="muted">What a person may do comes only from the permissions in their roles. Job titles and who created a record make no difference. The grants below are demo configuration until the production permission matrix is agreed (O12).</p>
+  {% if 'access.manage' in caps %}<div class="actions"><a class="button" href="{% url 'role-new' %}">Add role</a> <a class="button" href="{% url 'user-new' %}">Add user</a></div>{% endif %}
+</div>
+<section class="card">
+  <h2>Roles</h2>
+  <div class="table-wrap">
+  <table class="data">
+    <thead><tr><th>Role</th><th>Permissions</th><th></th></tr></thead>
+    <tbody>
+    {% for role in roles %}
+      <tr><td>{{ role.name }}{% if role.is_demo %} <span class="pill draft">demo</span>{% endif %}</td>
+      <td>{% for cap in role.capabilities.all %}<code class="cap">{{ cap.key }}</code> {% empty %}<span class="muted">View only</span>{% endfor %}</td>
+      <td>{% if 'access.manage' in caps %}<a href="{% url 'role-edit' role.pk %}">Change</a>{% endif %}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+<section class="card">
+  <h2>Users</h2>
+  <div class="table-wrap">
+  <table class="data">
+    <thead><tr><th>Username</th><th>Name</th><th>Roles</th><th>Active</th><th></th></tr></thead>
+    <tbody>
+    {% for person in users %}
+      <tr{% if not person.is_active %} class="inactive"{% endif %}><td>{{ person.username }}</td><td>{{ person.get_full_name|default:"—" }}</td>
+      <td>{% for role in person.roles.all %}{{ role.name }}{% if not forloop.last %}, {% endif %}{% empty %}<span class="muted">None</span>{% endfor %}</td>
+      <td>{{ person.is_active|yesno:"Yes,No" }}</td>
+      <td>{% if 'access.manage' in caps %}<a href="{% url 'user-edit' person.pk %}">Change</a>{% endif %}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+<section class="card">
+  <h2>What each permission allows</h2>
+  <dl class="caps">{% for cap in capabilities %}<div><dt><code>{{ cap.key }}</code></dt><dd>{{ cap.description }}</dd></div>{% endfor %}</dl>
+</section>
+{% endblock %}

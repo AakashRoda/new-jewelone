@@ -1,0 +1,15 @@
+<fieldset class="line-card" data-line>
+  <legend>Line</legend>
+  {% if form.non_field_errors %}<div class="error-text">{{ form.non_field_errors }}</div>{% endif %}
+  <div class="grid four">
+    {% include "partials/field.html" with field=form.description %}
+    {% include "partials/field.html" with field=form.item %}
+    {% include "partials/field.html" with field=form.purity %}
+    {% include "partials/field.html" with field=form.hsn_code %}
+    {% include "partials/field.html" with field=form.stated_pieces %}
+    {% include "partials/field.html" with field=form.stated_gross_weight %}
+    {% include "partials/field.html" with field=form.stated_net_weight %}
+    {% include "partials/field.html" with field=form.stated_value %}
+  </div>
+  <label class="remove-line">{{ form.DELETE }} Remove this line</label>
+</fieldset>

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Enter supplier invoice · Store App{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{% url 'invoice-list' %}">Supplier invoices</a> / New</p>
+<h1>Enter a supplier invoice</h1>
+<p class="muted">Copy what the supplier's document states. This is a book record: it does not receive goods and does not change stock. Leave a value empty if the invoice does not state it. No metal purchase rate is asked for.</p>
+{% include "partials/errors.html" with form_errors=header.non_field_errors %}
+<form method="post" novalidate data-once>{% csrf_token %}
+  <input type="hidden" name="retry_key" value="{{ retry_key }}">
+  <section class="card">
+    <h2>Invoice</h2>
+    <div class="grid three">
+      {% include "partials/field.html" with field=header.supplier %}
+      {% include "partials/field.html" with field=header.invoice_number %}
+      {% include "partials/field.html" with field=header.invoice_date %}
+      {% include "partials/field.html" with field=header.stated_taxable_value %}
+      {% include "partials/field.html" with field=header.stated_tax_value %}
+      {% include "partials/field.html" with field=header.stated_total_value %}
+    </div>
+    {% include "partials/field.html" with field=header.notes wide=True %}
+  </section>
+  <section class="card">
+    <h2>Invoice lines</h2>
+    {{ formset.management_form }}
+    <div id="lines">
+      {% for form in formset %}{% include "purchasing/_line_form.html" %}{% endfor %}
+    </div>
+    <template id="line-template">{% include "purchasing/_line_form.html" with form=formset.empty_form %}</template>
+    <button type="button" class="button" data-add-line data-prefix="lines">Add another line</button>
+  </section>
+  <div class="actions">
+    <button type="submit" class="primary">Save invoice</button>
+    <a class="button" href="{% url 'invoice-list' %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

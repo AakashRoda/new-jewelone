@@ -1,0 +1,35 @@
+{% load storefmt %}
+<div class="table-wrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th>#</th><th>Item</th>
+      {% if not inward.is_weight_only %}<th class="num">Pieces<div class="muted small">declared / actual</div></th>{% endif %}
+      <th class="num">{% if inward.is_weight_only %}Weight{% else %}Gross{% endif %}<div class="muted small">declared / actual</div></th>
+      <th class="num">Difference<div class="muted small">actual − declared</div></th>
+      {% if not inward.is_weight_only %}<th class="num">Net<div class="muted small">declared / actual</div></th><th class="num">Net difference</th>{% endif %}
+      <th>Condition notes</th>
+      {% if show_links %}<th>Supplier invoice</th>{% endif %}
+    </tr>
+  </thead>
+  <tbody>
+  {% for line in lines %}
+    <tr>
+      <td>{{ line.line_no }}</td>
+      <td>{{ line.classification }}</td>
+      {% if not inward.is_weight_only %}<td class="num">{{ line.declared_pieces|dash }} / <strong>{{ line.actual_pieces }}</strong>{% if line.pieces_difference %}<div class="diff">{{ line.pieces_difference|signed_int }}</div>{% endif %}</td>{% endif %}
+      <td class="num">{{ line.declared_gross_weight|weight }} / <strong>{{ line.actual_gross_weight|weight }}</strong> {{ line.unit.code }}</td>
+      <td class="num{% if line.gross_difference %} diff{% endif %}">{{ line.gross_difference|signed_weight }}</td>
+      {% if not inward.is_weight_only %}
+      <td class="num">{{ line.declared_net_weight|weight }} / <strong>{{ line.actual_net_weight|weight }}</strong> {{ line.unit.code }}</td>
+      <td class="num{% if line.net_difference %} diff{% endif %}">{{ line.net_difference|signed_weight }}</td>
+      {% endif %}
+      <td>{{ line.condition_notes|default:"—" }}</td>
+      {% if show_links %}
+      <td>{% for link in line.links %}<a href="{% url 'invoice-detail' link.invoice_line.invoice_id %}">{{ link.invoice_line.invoice.invoice_number }}</a>{% if not forloop.last %}, {% endif %}{% empty %}<span class="muted">Not linked</span>{% endfor %}</td>
+      {% endif %}
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>

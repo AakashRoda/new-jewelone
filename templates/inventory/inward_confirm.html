@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load storefmt %}
+{% block title %}Receive {{ inward.number }} · Store App{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{% url 'inward-list' %}">Inwards</a> / <a href="{% url 'inward-detail' inward.pk %}">{{ inward.number }}</a> / Receive into stock</p>
+<h1>Receive {{ inward.number }} into stock</h1>
+{% include "partials/errors.html" %}
+<p>{{ mode_label }} · {{ inward.get_source_type_display }} from {{ inward.source_party }}{% if inward.source_reference %} · reference {{ inward.source_reference }}{% endif %} · received at {{ inward.location }}</p>
+
+<section class="card">
+  <h2>Check the actual quantities</h2>
+  {% include "inventory/_lines_table.html" with show_links=False %}
+</section>
+
+{% if not inward.is_confirmed %}
+<div class="notice {% if inward.is_weight_only %}lock{% else %}info{% endif %}">
+  <strong>What happens when you confirm</strong>
+  <ul>
+    <li>The actual quantities above are added to physical stock, once.</li>
+    {% if inward.is_weight_only %}
+    <li>The weight goes straight into the item's weight balance.</li>
+    <li><strong>This inward locks immediately and can no longer be edited.</strong> Corrections to locked inwards are not available yet (open decision O01), so check the weights now.</li>
+    {% else %}
+    <li>The pieces wait as untagged stock until lots are created.</li>
+    <li>The inward can still be edited, with a reason, until its first lot is created. It then locks.</li>
+    {% endif %}
+    {% if inward.needs_parcel_opening %}<li>You are confirming that you opened the supplier parcel and verified its contents.</li>{% endif %}
+  </ul>
+</div>
+<form method="post" data-once>{% csrf_token %}
+  <input type="hidden" name="retry_key" value="{{ retry_key }}">
+  <input type="hidden" name="expected_version" value="{{ expected_version }}">
+  <div class="actions">
+    <button type="submit" class="primary">Confirm receipt into stock</button>
+    <a class="button" href="{% url 'inward-detail' inward.pk %}">Back without receiving</a>
+  </div>
+</form>
+{% else %}
+<p><a class="button" href="{% url 'inward-detail' inward.pk %}">Back to {{ inward.number }}</a></p>
+{% endif %}
+{% endblock %}

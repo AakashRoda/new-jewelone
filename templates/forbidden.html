@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Not permitted · Store App{% endblock %}
+{% block content %}
+<h1>You do not have permission for this</h1>
+<p class="notice warn">This screen needs the permission <code>{{ capability }}</code>, which none of your roles includes.
+Someone who manages users and roles can grant it.</p>
+<p><a href="{% url 'stock-overview' %}">Back to stock</a></p>
+{% endblock %}

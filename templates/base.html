@@ -1,0 +1,38 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Store App{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+  {% if DEMO_MODE %}<div class="demo-banner">Demo environment. All stock, suppliers and users here are synthetic. Not for real stock.</div>{% endif %}
+  <header class="topbar">
+    <a class="brand" href="{% url 'stock-overview' %}">Store App</a>
+    {% if user.is_authenticated %}
+    <nav aria-label="Main">
+      <a href="{% url 'stock-overview' %}" {% if nav == 'stock' %}aria-current="page"{% endif %}>Stock</a>
+      <a href="{% url 'inward-list' %}" {% if nav == 'inwards' %}aria-current="page"{% endif %}>Inwards</a>
+      <a href="{% url 'invoice-list' %}" {% if nav == 'invoices' %}aria-current="page"{% endif %}>Supplier invoices</a>
+      <a href="{% url 'masters-index' %}" {% if nav == 'masters' %}aria-current="page"{% endif %}>Masters and settings</a>
+      {% if 'audit.view' in caps %}<a href="{% url 'audit-list' %}" {% if nav == 'history' %}aria-current="page"{% endif %}>History</a>{% endif %}
+      <a href="{% url 'access-index' %}" {% if nav == 'access' %}aria-current="page"{% endif %}>Users and roles</a>
+    </nav>
+    <form class="who" method="post" action="{% url 'logout' %}">{% csrf_token %}
+      <span>{{ user.label }}</span>
+      <button type="submit" class="link">Sign out</button>
+    </form>
+    {% endif %}
+  </header>
+  <main>
+    {% if messages %}
+    <div class="messages" role="status">
+      {% for message in messages %}<div class="message {{ message.tags }}">{{ message }}</div>{% endfor %}
+    </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+  <script src="{% static 'js/app.js' %}" defer></script>
+</body>
+</html>

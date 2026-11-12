@@ -1,0 +1,21 @@
+[project]
+name = "store-app"
+version = "0.1.0"
+description = "Jewellery store application: inventory first (owner's independent AI-assisted build)"
+requires-python = ">=3.12"
+dependencies = [
+    "django>=5.2,<5.3",
+    "psycopg[binary]>=3.2,<4",
+    "gunicorn>=23",
+    "whitenoise>=6.8",
+]
+
+[dependency-groups]
+dev = ["pytest>=8", "pytest-django>=4.9"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-ra"
+filterwarnings = ["ignore:No directory at:UserWarning"]

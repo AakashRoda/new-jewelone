@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · Store App{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{% url 'masters-index' %}">Masters and settings</a> / {{ title }}</p>
+<div class="page-head">
+  <h1>{{ title }}</h1>
+  {% if note %}<p class="muted">{{ note }}</p>{% endif %}
+  {% if 'masters.manage' in caps %}<div class="actions"><a class="button primary" href="{% url 'master-new' slug %}">Add</a></div>{% endif %}
+</div>
+{% if rows %}
+<div class="table-wrap">
+<table class="data">
+  <thead><tr>{% for name, label in columns %}<th>{{ label|capfirst }}</th>{% endfor %}<th></th></tr></thead>
+  <tbody>
+  {% for row in rows %}
+    <tr{% if not row.is_active %} class="inactive"{% endif %}>{% for cell in row.cells %}<td>{{ cell }}</td>{% endfor %}<td>{% if 'masters.manage' in caps %}<a href="{% url 'master-edit' slug row.pk %}">Change</a>{% endif %}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% else %}<p class="muted">Nothing here yet.</p>{% endif %}
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load storefmt %}
+{% block title %}Link invoice line · Store App{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{% url 'invoice-list' %}">Supplier invoices</a> / <a href="{% url 'invoice-detail' invoice.pk %}">{{ invoice.invoice_number }}</a> / Link line {{ invoice_line.line_no }}</p>
+<h1>Link invoice line {{ invoice_line.line_no }} to a receipt</h1>
+<p>Invoice line: <strong>{{ invoice_line.description }}</strong>{% if invoice_line.stated_gross_weight is not None %}, {{ invoice_line.stated_gross_weight|weight }}{% if invoice_line.unit %} {{ invoice_line.unit.code }}{% endif %} stated{% endif %}{% if invoice_line.stated_pieces %}, {{ invoice_line.stated_pieces }} pieces stated{% endif %}.</p>
+<p class="muted">Linking is a cross-reference only. The goods below are already in stock from their inward and are not added again.</p>
+{% include "partials/errors.html" %}
+{% if candidates %}
+<form method="post" data-once>{% csrf_token %}
+  <input type="hidden" name="retry_key" value="{{ retry_key }}">
+  <div class="table-wrap">
+  <table class="data">
+    <thead><tr><th></th><th>Inward</th><th>Their reference</th><th>Item</th><th class="num">Pieces received</th><th class="num">Weight received</th></tr></thead>
+    <tbody>
+    {% for line in candidates %}
+      <tr>
+        <td><input type="radio" name="inward_line" value="{{ line.pk }}" id="pick-{{ line.pk }}" required></td>
+        <td><label for="pick-{{ line.pk }}">{{ line.inward.number }} line {{ line.line_no }}</label><div class="muted small">{{ line.inward.get_source_type_display }}</div></td>
+        <td>{{ line.inward.source_reference|default:"—" }}</td>
+        <td>{{ line.classification }}</td>
+        <td class="num">{{ line.actual_pieces|dash }}</td>
+        <td class="num">{{ line.actual_gross_weight|weight }} {{ line.unit.code }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <div class="actions">
+    <button type="submit" class="primary">Link to the chosen receipt</button>
+    <a class="button" href="{% url 'invoice-detail' invoice.pk %}">Cancel</a>
+  </div>
+</form>
+{% else %}
+<p class="notice">There are no other received inwards from {{ invoice.supplier }} to link. Goods must be received into stock through an inward first; an invoice cannot add them.</p>
+<p><a class="button" href="{% url 'invoice-detail' invoice.pk %}">Back to the invoice</a></p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}{% if inward %}Edit {{ inward.number }}{% else %}New inward{% endif %} · Store App{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{% url 'inward-list' %}">Inwards</a> / {% if inward %}<a href="{% url 'inward-detail' inward.pk %}">{{ inward.number }}</a> / Edit{% else %}New{% endif %}</p>
+<h1>{% if inward %}Edit {{ inward.number }}{% else %}New inward: {{ mode_label|lower }}{% endif %}</h1>
+<p class="muted">
+  {% if weight_only %}Weight-only stock is received by weight. There are no tags and no piece count.
+  {% else %}Enter everything that physically arrived, including damaged pieces and designs that may be sent back.{% endif %}
+  Weights are in the item's unit, to the milligram (for example 100.000).
+</p>
+{% include "partials/errors.html" with form_errors=header.non_field_errors %}
+{% if formset.non_form_errors %}<div class="notice error">{{ formset.non_form_errors }}</div>{% endif %}
+
+<form method="post" novalidate data-once>{% csrf_token %}
+  <input type="hidden" name="retry_key" value="{{ retry_key }}">
+  <input type="hidden" name="expected_version" value="{{ expected_version }}">
+
+  <section class="card">
+    <h2>Where the goods came from</h2>
+    <div class="grid three">
+      {% include "partials/field.html" with field=header.source_type %}
+      {% include "partials/field.html" with field=header.supplier wrap_id="supplier-field" %}
+      {% include "partials/field.html" with field=header.karigar wrap_id="karigar-field" %}
+      {% include "partials/field.html" with field=header.source_reference %}
+      {% include "partials/field.html" with field=header.source_date %}
+      {% include "partials/field.html" with field=header.location %}
+      {% include "partials/field.html" with field=header.custodian %}
+    </div>
+    {% include "partials/field.html" with field=header.notes wide=True %}
+  </section>
+
+  <section class="card">
+    <h2>Goods received</h2>
+    {{ formset.management_form }}
+    <div id="lines">
+      {% for form in formset %}{% include "inventory/_line_form.html" %}{% endfor %}
+    </div>
+    <template id="line-template">{% include "inventory/_line_form.html" with form=formset.empty_form %}</template>
+    <button type="button" class="button" data-add-line data-prefix="lines">Add another line</button>
+  </section>
+
+  {% if inward %}
+  <section class="card">
+    <h2>Why are you changing this inward?</h2>
+    {% include "partials/field.html" with field=header.reason wide=True %}
+    {% if inward.is_confirmed %}<p class="muted small">This inward is already in stock. Physical stock will follow the corrected quantities, and the change stays visible in its history.</p>{% endif %}
+  </section>
+  {% endif %}
+
+  <div class="actions">
+    <button type="submit" class="primary">{% if inward %}Save changes{% else %}Save as draft{% endif %}</button>
+    <a class="button" href="{% if inward %}{% url 'inward-detail' inward.pk %}{% else %}{% url 'inward-list' %}{% endif %}">Cancel</a>
+    {% if not inward %}<span class="muted small">Saving does not add stock. You check and receive it in the next step.</span>{% endif %}
+  </div>
+</form>
+{% endblock %}

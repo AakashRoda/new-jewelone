@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load storefmt %}
+{% block title %}{{ inward.number }} · Store App{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{% url 'inward-list' %}">Inwards</a> / {{ inward.number }}</p>
+<div class="page-head">
+  <h1>{{ inward.number }}
+    {% if inward.is_locked %}<span class="pill locked">Received · locked</span>
+    {% elif inward.is_confirmed %}<span class="pill ok">Received</span>
+    {% else %}<span class="pill draft">Draft</span>{% endif %}
+  </h1>
+  <p class="muted">{{ mode_label }} · {{ inward.get_source_type_display }} from {{ inward.source_party }}</p>
+</div>
+
+{% if not inward.is_confirmed %}
+<div class="notice info">This is a draft. The goods are <strong>not in stock</strong> until the receipt is confirmed.
+  {% if can_confirm %}<div class="actions"><a class="button primary" href="{% url 'inward-confirm' inward.pk %}">Check and receive into stock</a></div>
+  {% else %}<div class="small">{{ confirm_block }}</div>{% endif %}
+</div>
+{% endif %}
+
+{% if inward.is_locked %}
+<div class="notice lock"><strong>Locked.</strong> {{ lock_explanation }}</div>
+{% elif edit_block %}
+<div class="notice">Editing is not available to you: {{ edit_block }}</div>
+{% else %}
+<div class="actions">
+  <a class="button" href="{% url 'inward-edit' inward.pk %}">Edit (a reason is required)</a>
+  {% if inward.is_confirmed %}<span class="muted small">Editable until its first lot is created.</span>{% endif %}
+</div>
+{% endif %}
+
+<section class="card">
+  <h2>Receipt</h2>
+  <dl class="facts">
+    <div><dt>From</dt><dd>{{ inward.source_party }} ({{ inward.get_source_type_display }})</dd></div>
+    <div><dt>Their reference</dt><dd>{{ inward.source_reference|default:"—" }}{% if inward.source_date %}, dated {{ inward.source_date|date:"d M Y" }}{% endif %}</dd></div>
+    <div><dt>Received at</dt><dd>{{ inward.location }}</dd></div>
+    <div><dt>In custody of</dt><dd>{{ inward.custodian.label|default:"—" }}</dd></div>
+    <div><dt>Entered by</dt><dd>{{ inward.created_by.label }}, {{ inward.created_at|date:"d M Y, H:i" }}</dd></div>
+    <div><dt>Received and verified by</dt><dd>{% if inward.confirmed_by %}{{ inward.confirmed_by.label }}, {{ inward.confirmed_at|date:"d M Y, H:i" }}{% else %}Not yet received{% endif %}</dd></div>
+    {% if inward.notes %}<div class="wide"><dt>Notes</dt><dd>{{ inward.notes }}</dd></div>{% endif %}
+  </dl>
+</section>
+
+<section class="card">
+  <h2>Goods received</h2>
+  {% include "inventory/_lines_table.html" with show_links=True %}
+  {% if removed_lines %}
+  <p class="muted small">Removed before the lock (kept for history):
+    {% for line in removed_lines %}line {{ line.line_no }}, {{ line.classification }}, {{ line.actual_gross_weight|weight }} {{ line.unit.code }}{% if not forloop.last %}; {% endif %}{% endfor %}.</p>
+  {% endif %}
+</section>
+
+{% if inward.is_confirmed %}
+<section class="card">
+  <h2>Effect on physical stock</h2>
+  <div class="table-wrap">
+  <table class="data">
+    <thead><tr><th>When</th><th>What</th><th>Line</th>{% if not inward.is_weight_only %}<th class="num">Pieces</th>{% endif %}<th class="num">Weight</th><th>By</th></tr></thead>
+    <tbody>
+    {% for movement in movements %}
+      <tr><td class="nowrap">{{ movement.occurred_at|date:"d M Y, H:i" }}</td><td>{{ movement.get_kind_display }}</td><td>{{ movement.inward_line.line_no }} · {{ movement.item.name }}</td>{% if not inward.is_weight_only %}<td class="num">{{ movement.pieces|signed_int }}</td>{% endif %}<td class="num">{{ movement.gross_weight|signed_weight }} {{ movement.unit.code }}</td><td>{{ movement.actor.label }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p class="muted small">Supplier invoices linked to this inward never appear here: they are book records and do not change stock.</p>
+</section>
+{% endif %}
+
+<section class="card">
+  <h2>History</h2>
+  {% include "partials/history.html" %}
+</section>
+{% endblock %}

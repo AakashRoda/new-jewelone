@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · Store App{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{% url 'masters-index' %}">Masters and settings</a> / <a href="{% url 'master-list' slug %}">{{ title }}</a> / {% if instance %}Change{% else %}Add{% endif %}</p>
+<h1>{% if instance %}Change {{ instance }}{% else %}Add to {{ title|lower }}{% endif %}</h1>
+{% if note %}<p class="muted">{{ note }}</p>{% endif %}
+{% include "partials/errors.html" with form_errors=form.non_field_errors %}
+<form method="post" class="narrow" novalidate data-once>{% csrf_token %}
+  {% for field in form %}{% include "partials/field.html" with wide=True %}{% endfor %}
+  <p class="muted small">Records are not deleted. Untick "Is active" to stop a record being picked; existing receipts keep it.</p>
+  <div class="actions">
+    <button type="submit" class="primary">Save</button>
+    <a class="button" href="{% url 'master-list' slug %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}
